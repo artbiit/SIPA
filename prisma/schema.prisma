@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DB_URL")
+  shadowDatabaseUrl = env("SHADOW_DB_URL")
+}
+model Users {
+  id        Int       @id @default(autoincrement())
+  userId    String    @unique @db.VarChar(15)
+  password  String    @db.VarChar(15)
+  userName  String    @db.VarChar(16)
+  cash      Int       @default(0)
+  createdAt DateTime  @default(now())
+
+  // Relations
+  UsersAthlete UsersAthlete[]
+  MyTeam       MyTeam?
+  MMR          MMR[]
+}
+
+model UsersAthlete {
+  id        Int      @id @default(autoincrement())
+  userId    String   @db.VarChar(15)
+  athleteId Int
+  enhance   Int
+  createdAt DateTime  @default(now())
+
+  // Relations
+  Users   Users   @relation(fields: [userId], references: [userId])
+  Athlete Athlete @relation(fields: [athleteId], references: [id])
+}
+
+model Athlete {
+  id            Int    @id @default(autoincrement())
+  athleteName   String @db.VarChar(10)
+  speed         Int
+  scoringAbility Int
+  power         Int
+  defence       Int
+  stamina       Int
+  athleteType   AthleteType
+  spawnRate     Int
+
+  // Relations
+  UsersAthlete UsersAthlete[]
+  attackerInTeams MyTeam[] @relation("attackerRelation")
+  defenderInTeams MyTeam[] @relation("defenderRelation")
+  middleInTeams   MyTeam[] @relation("middleRelation")
+}
+
+model MyTeam {
+  id       Int    @id @default(autoincrement())
+  userId   String @unique @db.VarChar(15)
+  attacker Int
+  defender Int
+  middle   Int
+
+  // Relations
+  Users    Users     @relation(fields: [userId], references: [userId])
+  attackerAthlete Athlete @relation("attackerRelation", fields: [attacker], references: [id])
+  defenderAthlete Athlete @relation("defenderRelation", fields: [defender], references: [id])
+  middleAthlete   Athlete @relation("middleRelation", fields: [middle], references: [id])
+}
+
+model MMR {
+  id       Int    @id @default(autoincrement())
+  userId   String @db.VarChar(15)
+  score    Int
+
+  // Relations
+  Users Users @relation(fields: [userId], references: [userId])
+}
+
+enum AthleteType {
+  ATTACKER
+  DEFENDER
+  MIDDLE
+}

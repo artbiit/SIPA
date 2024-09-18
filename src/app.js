@@ -6,11 +6,6 @@ import bodyParser from 'body-parser';
 import logger from './lib/logger.js';
 import allRoutes from './routes/routes.js';
 import ApiError from './errors/api-error.js';
-
-import { authenticateToken } from './middleware/auth-middleware.js';
-import { checkUserRole } from './middleware/role-middleware.js';
-import { tokenVerify } from './middleware/token-middleware.js';
-
 const { SERVER_PORT } = env;
 const app = express();
 app.use(helmet());
@@ -24,9 +19,7 @@ const errorHandler = (error, req) => {
     message = error.message;
     statusCode = error.statusCode;
   }
-  logger.error(
-    `Error occurred: ${req.url}/${req.method} => ${error}, Status Code: ${statusCode}`
-  );
+  logger.error(`Error occurred: ${req.url}/${req.method} => ${error}, Status Code: ${statusCode}`);
   return { message, statusCode };
 };
 
@@ -42,15 +35,10 @@ const routeHandler = (action, requiredParams) => async (req, res) => {
       ...req.user,
     };
     // 필수 파라미터 검증
-    const missingParams = requiredParams.filter(
-      (param) => param && !`${data[param]}`.trim()
-    );
+    const missingParams = requiredParams.filter((param) => param && !`${data[param]}`.trim());
 
     if (missingParams.length > 0) {
-      throw new ApiError(
-        `Missing required parameters: ${missingParams.join(', ')}`,
-        422
-      );
+      throw new ApiError(`Missing required parameters: ${missingParams.join(', ')}`, 422);
     }
 
     // 서비스 호출 및 결과 반환
@@ -61,9 +49,7 @@ const routeHandler = (action, requiredParams) => async (req, res) => {
     message = errorInfo.message;
     statusCode = errorInfo.statusCode;
   } finally {
-    res
-      .status(statusCode)
-      .json({ success, ...(message && { message }), ...result });
+    res.status(statusCode).json({ success, ...(message && { message }), ...result });
   }
 };
 

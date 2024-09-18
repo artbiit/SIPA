@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import env from '../lib/env.js';
 import logger from '../lib/logger.js'; // 로깅 시스템 추가
 const { JWT_SECRET } = env;
-import { findUserById } from '../repositories/user-repository.js'; // 유저 정보를 DB에서 가져오는 함수
+//import { findUserById } from '../repositories/user-repository.js'; // 유저 정보를 DB에서 가져오는 함수
 import ApiError from '../errors/api-error.js';
 
 /**
@@ -22,8 +22,8 @@ export const tokenVerify = async (req, res, next) => {
       // 토큰 검증
       const user = jwt.verify(token, JWT_SECRET);
 
-      // DB에서 유저 정보 불러오기
-      const userFromDB = await findUserById(user.userId);
+      //TODO: DB에서 유저 정보 불러오기
+      const userFromDB = {}; //await findUserById(user.userId);
       if (!userFromDB) {
         throw new ApiError('User not found', 401);
       }
