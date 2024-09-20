@@ -1,6 +1,6 @@
-import { faker } from '@faker-js/faker'; // ES 모듈 방식 사용
+import { faker } from '@faker-js/faker';
 import { prisma } from '../lib/prisma.js';
-// 2. Athlete 테이블에서 모든 선수 정보 가져오기
+
 const athleteIds = await prisma.athlete.findMany({
   select: { id: true, athleteType: true },
 });
@@ -55,7 +55,7 @@ async function createDummyUser() {
     },
   });
 
-  await prisma.mmr.create({
+  await prisma.MMR.create({
     data: {
       userId: newUser.id,
       score: faker.number.int({ min: 0, max: 3000 }),
@@ -65,11 +65,13 @@ async function createDummyUser() {
   console.log(`Dummy user created with ID: ${newUser.id}`);
 }
 
-createDummyUser()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+try {
+  for (let i = 0; i < 100; i++) {
+    await createDummyUser();
+  }
+} catch (error) {
+  console.error(error);
+  process.exit(1);
+} finally {
+  await prisma.$disconnect();
+}
