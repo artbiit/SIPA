@@ -5,7 +5,6 @@ const routes = [
     method: 'get',
     url: '/game/ranking',
     action: TopMMR,
-    authRequired: true,
   },
 ];
 
