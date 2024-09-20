@@ -25,7 +25,7 @@ model Users {
   // Relations
   UsersAthlete UsersAthlete[]
   MyTeam       MyTeam[]
-  MMR          MMR?
+  MMR          MMR
 }
 
 model UsersAthlete {
