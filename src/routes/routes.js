@@ -1,8 +1,6 @@
-import Utils from "../lib/utils.js";
-import { authenticateToken } from "../middleware/auth-middleware.js";
-import { verifyOwnership } from "../middleware/ownership-middleware.js";
-import { checkUserRole } from "../middleware/role-middleware.js";
-import { tokenVerify } from "../middleware/token-middleware.js";
+import Utils from '../lib/utils.js';
+import { authenticateToken } from '../middleware/auth-middleware.js';
+import { tokenVerify } from '../middleware/token-middleware.js';
 
 const allRoutes = [
   // 다른 라우트 추가 가능
@@ -17,11 +15,6 @@ allRoutes.forEach((route) => {
   if (route.authRequired) {
     route.middleware.push(authenticateToken);
   }
-
-  if (route.ownershipRequired) {
-    route.middleware.push(verifyOwnership);
-  }
-  route.middleware.push(checkUserRole(route.roleRequired));
 });
 
 export default allRoutes;
