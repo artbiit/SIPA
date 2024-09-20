@@ -23,20 +23,23 @@ model Users {
 
   // Relations
   UsersAthlete UsersAthlete[]
-  MyTeam       MyTeam?
-  MMR          MMR[]
+  MyTeam       MyTeam[]
+  MMR          MMR?
 }
 
 model UsersAthlete {
   id        Int      @id @default(autoincrement())
-  userId    String   @db.VarChar(15)
+  userId    Int
   athleteId Int
   enhance   Int
   createdAt DateTime  @default(now())
 
   // Relations
-  Users   Users   @relation(fields: [userId], references: [userId])
+  Users   Users   @relation(fields: [userId], references: [id])
   Athlete Athlete @relation(fields: [athleteId], references: [id])
+
+  @@index([userId])
+  @@index([athleteId])
 }
 
 model Athlete {
@@ -59,25 +62,32 @@ model Athlete {
 
 model MyTeam {
   id       Int    @id @default(autoincrement())
-  userId   String @unique @db.VarChar(15)
+  userId   Int
   attacker Int
   defender Int
   middle   Int
 
   // Relations
-  Users    Users     @relation(fields: [userId], references: [userId])
+  Users    Users     @relation(fields: [userId], references: [id])
   attackerAthlete Athlete @relation("attackerRelation", fields: [attacker], references: [id])
   defenderAthlete Athlete @relation("defenderRelation", fields: [defender], references: [id])
   middleAthlete   Athlete @relation("middleRelation", fields: [middle], references: [id])
+
+  @@index([userId])
+  @@index([attacker])
+  @@index([defender])
+  @@index([middle])
 }
 
 model MMR {
   id       Int    @id @default(autoincrement())
-  userId   String @db.VarChar(15)
+  userId   Int
   score    Int
 
   // Relations
-  Users Users @relation(fields: [userId], references: [userId])
+  Users Users @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 enum AthleteType {
