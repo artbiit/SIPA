@@ -13,6 +13,7 @@ datasource db {
   url      = env("DB_URL")
   shadowDatabaseUrl = env("SHADOW_DB_URL")
 }
+
 model Users {
   id        Int       @id @default(autoincrement())
   userId    String    @unique @db.VarChar(15)
@@ -66,6 +67,7 @@ model MyTeam {
   attacker Int
   defender Int
   middle   Int
+  createdAt DateTime  @default(now())
 
   // Relations
   Users    Users     @relation(fields: [userId], references: [id])
@@ -80,12 +82,13 @@ model MyTeam {
 }
 
 model MMR {
-  id       Int    @id @default(autoincrement())
-  userId   Int
-  score    Int
+  id        Int    @id @default(autoincrement())
+  userId    Int
+  score     Int
+  createdAt DateTime  @default(now())
 
   // Relations
-  Users Users @relation(fields: [userId], references: [id])
+  Users     Users @relation(fields: [userId], references: [id])
 
   @@index([userId])
 }
