@@ -2,9 +2,11 @@ import Utils from '../lib/utils.js';
 import { authenticateToken } from '../middleware/auth-middleware.js';
 import { tokenVerify } from '../middleware/token-middleware.js';
 import gameRoutes from './game-route.js';
+import playRoutes from './play-route.js'
 
 const allRoutes = [
   gameRoutes,
+  playRoutes,
   // 다른 라우트 추가 가능
 ];
 
