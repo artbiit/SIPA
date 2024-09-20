@@ -30,7 +30,7 @@ model Users {
 
 model UsersAthlete {
   id        Int      @id @default(autoincrement())
-  userId    Int
+  userId    Int      @unique
   athleteId Int
   enhance   Int
   createdAt DateTime  @default(now())
@@ -83,7 +83,7 @@ model MyTeam {
 
 model MMR {
   id        Int    @id @default(autoincrement())
-  userId    Int
+  userId    Int    @unique
   score     Int
   createdAt DateTime  @default(now())
 
