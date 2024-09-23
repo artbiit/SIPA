@@ -13,12 +13,24 @@ export const getMyTeam = async (userId) => {
         UsersAthlete_MyTeam_middleToUsersAthlete: true, // 미드필더 포함
       },
     });
-    return myTeam;
+
+    if (myTeam.length === 0) {
+      throw new Error('팀을 발견하지 못했습니다.');
+    }
+
+    const team = {
+      attacker: await getAthleteById(myTeam[0].UsersAthlete_MyTeam_attackerToUsersAthlete.athleteId),
+      defender: await getAthleteById(myTeam[0].UsersAthlete_MyTeam_defenderToUsersAthlete.athleteId),
+      middle: await getAthleteById(myTeam[0].UsersAthlete_MyTeam_middleToUsersAthlete.athleteId),
+    };
+
+    return team;
   } catch (error) {
     console.error('팀을 발견하지 못했습니다.', error);
     throw new Error('팀 조회 실패');
   }
 };
+
 export const getEnemyTeam = async (userName) => {
   try {
     // 1. userName으로 Users 테이블에서 userId 조회
@@ -48,3 +60,31 @@ export const getEnemyTeam = async (userName) => {
   }
 };
 
+
+const getAthleteById = async (athleteId) => {
+  try {
+    const athlete = await prisma.athlete.findUnique({
+      where: {
+        id: athleteId, // athleteId로 Athlete 찾기
+      },
+      select: {
+        id: true,
+        athleteName: true,
+        speed: true,
+        scoringAbility: true,
+        power: true,
+        defence: true,
+        stamina: true,
+      },
+    });
+
+    if (!athlete) {
+      throw new Error('Athlete not found');
+    }
+
+    return athlete;
+  } catch (error) {
+    console.error('Error retrieving athlete:', error);
+    throw new Error('Failed to retrieve athlete');
+  }
+};

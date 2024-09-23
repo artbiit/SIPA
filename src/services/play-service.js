@@ -40,9 +40,9 @@ const calculatePlayerScore = (player, weights) => {
 // 팀의 점수를 계산하는 함수 (포지션별 가중치 적용)
 const calculateTeamScore = (team) => {
   console.log(team);
-  const attackerScore = calculatePlayerScore(team.UsersAthlete_MyTeam_attackerToUsersAthlete, WEIGHTS_ATTACKER);
-  const middleScore = calculatePlayerScore(team.UsersAthlete_MyTeam_middleToUsersAthlete, WEIGHTS_MIDFIELDER);
-  const defenderScore = calculatePlayerScore(team.UsersAthlete_MyTeam_defenderToUsersAthlete, WEIGHTS_DEFENDER);
+  const attackerScore = calculatePlayerScore(team.attacker, WEIGHTS_ATTACKER);
+  const middleScore = calculatePlayerScore(team.middle, WEIGHTS_MIDFIELDER);
+  const defenderScore = calculatePlayerScore(team.defender, WEIGHTS_DEFENDER);
 
   return attackerScore + middleScore + defenderScore;
 };
