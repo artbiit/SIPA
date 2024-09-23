@@ -1,9 +1,10 @@
 import Utils from '../lib/utils.js';
 import { authenticateToken } from '../middleware/auth-middleware.js';
 import { tokenVerify } from '../middleware/token-middleware.js';
-
+import teamRoute from './team-organize-routes.js';
 const allRoutes = [
   // 다른 라우트 추가 가능
+  ...teamRoute,
 ];
 
 // 파라미터 및 미들웨어 자동 설정

@@ -1,10 +1,13 @@
-import {a} from '../services/team-organize-service';
+import {teamOrganize} from '../services/team-organize-service.js';
 
 const routes=[
     {
         method:'patch',
         url:'/users/team',
-        action:a,
+        action:teamOrganize,
         autoRequired:true,
-    }
+    },
+    
 ]
+
+export default routes;

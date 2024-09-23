@@ -1,20 +1,33 @@
-import prisma from '../lib/prisma.js';
+import {prisma} from '../lib/prisma.js';
 
 export const teamSetting=async(userId,attacker,defender,middle)=>{
 	try{
-		await prisma.MyTeam.update({
+		const userExists = await prisma.Users.findUnique({
+			where: { id: userId },
+		  });
+	  
+		  if (!userExists) {
+			throw new Error("User not found in the Users table.");
+		  }
+		await prisma.MyTeam.upsert({
 			where: {
-				userId:userId,
+			  id: userId,		
 			},
-			data: {
-				attacker:attacker,
-				defender:defender,
-				middle:middle,
+			update: {
+			  attacker: attacker,
+			  defender: defender,
+			  middle: middle,
+			},
+			create: {
+			  userId: userId,
+			  attacker: attacker,
+			  defender: defender,
+			  middle: middle,
 			},
 		});
 
 	}catch(error){
+		console.log("detail",error);
 		throw new Error("Team setting error");
 	}
-};
-
+}
