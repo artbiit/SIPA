@@ -2,7 +2,7 @@ import ApiError from "../errors/api-error.js";
 import prisma from "../lib/prisma.js";
 import Utils from "../lib/utils.js";
 import { createUser } from "../repositories/users-repository.js";
-import bcrypt from 'bcrypt';
+import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken';
 
 
@@ -22,14 +22,17 @@ export const signup = async ({ userId, password, userName }) => {
         userId,
         userName
     };
+    const hashedPassword = await bcrypt.hash(password, 10);
 };
 
-export const login = async ({ userId, password }) => {
-    if(!user){
-        throw new ApiError("요청하신 정보가 없습니다", 400);
-    }
-    // if (!(password, user.password)){
-    //     throw new ApiError("비밀번호가 일치하지않습니다" 400);
-    // }
 
+
+export const login = async ({ userId, password }) => {
+
+if(!user){
+    throw new ApiError("요청하신 정보가 없습니다", 400);
+}
+if (!(password, user.password)){
+    throw new ApiError("비밀번호가 일치하지않습니다", 400);
+    }
 }
