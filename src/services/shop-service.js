@@ -22,15 +22,18 @@ export const gachaAthletes = async ({ Id = null, gatcha }) => {
   }
 
   return await prisma.$transaction(async (prisma) => {
-    const remainingCash = await updateUserCash(Id, -totalCost);
-    if (remainingCash < 0) {
+    const user = await findUserById(Id);
+
+    if (user.cash < totalCost) {
       throw new ApiError('Insufficient cash', 400);
     }
+
+    const remainingCash = await updateUserCash(Id, -totalCost);
 
     const athletes = await drawAthletes(gatcha);
 
     await addAthletesToUser(Id, athletes);
-    const user = await findUserById(Id);
-    return { cash: user.cash, athletes };
+
+    return { cash: remainingCash, athletes };
   });
 };

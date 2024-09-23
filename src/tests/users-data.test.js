@@ -12,9 +12,9 @@ const middles = athleteIds.filter((a) => a.athleteType === 'MIDDLE');
 async function createDummyUser() {
   const newUser = await prisma.users.create({
     data: {
-      userId: faker.string.alpha({ length: 15 }),
-      password: faker.string.alphanumeric({ length: 15 }),
-      userName: faker.string.alpha({ length: 16 }),
+      userId: faker.string.alphanumeric({ length: 15 }),
+      password: faker.internet.password(15),
+      userName: faker.person.firstName(),
       cash: faker.number.int({ min: 1000, max: 30000 }),
     },
   });
@@ -36,22 +36,31 @@ async function createDummyUser() {
     selectedAthletes.push(athlete);
   }
 
-  const usersAthletes = selectedAthletes.map((athlete) => ({
-    userId: newUser.id,
-    athleteId: athlete.id,
-    enhance: faker.number.int({ min: 1, max: 3 }),
-  }));
-
-  await prisma.usersAthlete.createMany({
-    data: usersAthletes,
+  // 먼저 UsersAthlete에 데이터를 추가하고 그 id를 가져옴
+  const usersAthletes = await prisma.usersAthlete.createMany({
+    data: selectedAthletes.map((athlete) => ({
+      userId: newUser.id,
+      athleteId: athlete.id,
+      enhance: faker.number.int({ min: 1, max: 3 }),
+    })),
+    skipDuplicates: true,
   });
+
+  // 각 UsersAthlete의 id를 가져와서 팀을 구성
+  const userAthletes = await prisma.usersAthlete.findMany({
+    where: { userId: newUser.id },
+  });
+
+  const attackerUserAthlete = userAthletes.find((ua) => ua.athleteId === attacker.id);
+  const defenderUserAthlete = userAthletes.find((ua) => ua.athleteId === defender.id);
+  const middleUserAthlete = userAthletes.find((ua) => ua.athleteId === middle.id);
 
   await prisma.myTeam.create({
     data: {
       userId: newUser.id,
-      attacker: attacker.id,
-      defender: defender.id,
-      middle: middle.id,
+      attacker: attackerUserAthlete.id, // UsersAthlete.id 사용
+      defender: defenderUserAthlete.id, // UsersAthlete.id 사용
+      middle: middleUserAthlete.id, // UsersAthlete.id 사용
     },
   });
 

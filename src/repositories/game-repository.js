@@ -22,11 +22,11 @@ export const getTop100MMR = async () => {
   }
 };
 
-export const getMMRByUserId = async (userId) => {
+export const getMMRByUserId = async (Id) => {
   try {
-    const userMMR = await prisma.MMR.findUnique({
+    const userMMR = await prisma.MMR.findFirst({
       where: {
-        userId: userId,
+        userId: Id,
       },
       include: {
         Users: {
@@ -36,12 +36,9 @@ export const getMMRByUserId = async (userId) => {
         },
       },
     });
-    if (!userMMR) {
-      throw new Error('MMR not found for this user');
-    }
+
     return userMMR;
   } catch (error) {
-    console.error(`Error fetching MMR for userId ${userId}:`, error);
     throw new Error('Could not fetch MMR for the given user');
   }
 };

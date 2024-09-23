@@ -18,9 +18,10 @@ import {
   createEnhancedAthlete,
   getAthleteById,
   deleteAthleteById,
+  checkIfAthletesInTeam,
 } from '../repositories/athlete-repository.js';
 import logger from '../lib/logger.js';
-import { findUserByUsername } from '../repositories/user-repository.js';
+import { prisma } from '../lib/prisma.js';
 
 const { JWT_SECRET, JWT_EXPIRES_IN, JWT_ALGORITHM, JWT_ISSUER, JWT_AUDIENCE } = env;
 
@@ -92,33 +93,47 @@ export const updateUserTeam = async ({ Id = null, attacker, defender, middle }) 
     throw new Error('One or more athletes do not belong to the user.');
   }
 
-  return await updateTeam(Id, { attacker, defender, middle });
+  return await updateTeam(Id, attacker, defender, middle);
 };
 
 export const enhanceAthletes = async ({ Id = null, athleteIds }) => {
-  const athletes = await getAthletesByIds((Id = null), athleteIds);
+  return await prisma.$transaction(async (prisma) => {
+    const athletes = await getAthletesByIds(Id, athleteIds);
 
-  if (athletes.length !== 3) {
-    throw new ApiError('All athletes must belong to the user.', 400);
-  }
+    if (athletes.length !== 3) {
+      throw new ApiError('All athletes must belong to the user.', 400);
+    }
 
-  const firstAthlete = athletes[0];
+    const firstAthlete = athletes[0];
 
-  const isSameAthlete = athletes.every((athlete) => athlete.AthleteId === firstAthlete.AthleteId);
-  const isSameEnhance = athletes.every((athlete) => athlete.enhance === firstAthlete.enhance);
+    const isSameAthlete = athletes.every((athlete) => athlete.athleteId === firstAthlete.athleteId);
+    const isSameEnhance = athletes.every((athlete) => athlete.enhance === firstAthlete.enhance);
 
-  if (!isSameAthlete || !isSameEnhance) {
-    throw new ApiError('All athletes must have the same Athlete ID and enhancement level.', 400);
-  }
+    if (!isSameAthlete || !isSameEnhance) {
+      throw new ApiError('All athletes must have the same Athlete ID and enhancement level.', 400);
+    }
 
-  await deleteAthletesByIds((Id = null), athleteIds);
+    const isInTeam = await checkIfAthletesInTeam(Id, athleteIds);
+    if (isInTeam) {
+      throw new ApiError(
+        'One or more athletes are assigned to a team and cannot be enhanced.',
+        400,
+      );
+    }
 
-  const enhancedAthlete = await createEnhancedAthlete((Id = null), {
-    athleteId: firstAthlete.AthleteId,
-    enhance: firstAthlete.enhance + 1,
+    await deleteAthletesByIds(Id, athleteIds, prisma);
+
+    const enhancedAthlete = await createEnhancedAthlete(
+      Id,
+      {
+        athleteId: firstAthlete.athleteId,
+        enhance: firstAthlete.enhance + 1,
+      },
+      prisma,
+    );
+
+    return enhancedAthlete;
   });
-
-  return enhancedAthlete;
 };
 
 export const sellAthlete = async ({ Id = null, athleteId }) => {
@@ -144,7 +159,9 @@ export const getUserAthletes = async ({ Id = null }) => {
 };
 
 export const getSpecificUser = async ({ Id = null, userId }) => {
-  console.log(Id);
+  if (!userId) {
+    throw new ApiError('userId can not null', 404);
+  }
   const user = await findUserByUserId(userId, true);
 
   if (!user) {

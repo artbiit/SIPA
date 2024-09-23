@@ -5,6 +5,7 @@ import {
   getUserAthletes,
   enhanceAthletes,
   sellAthlete,
+  updateUserTeam,
 } from '../services/user-service.js';
 
 const routes = [
@@ -34,6 +35,12 @@ const routes = [
     method: 'post',
     url: '/users/athletes/sell',
     action: sellAthlete,
+    authRequired: true,
+  },
+  {
+    method: 'patch',
+    url: '/users/team',
+    action: updateUserTeam,
     authRequired: true,
   },
   {

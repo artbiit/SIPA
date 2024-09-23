@@ -8,7 +8,7 @@ export const checkAthleteOwnership = async (userId, athleteId) => {
     const athlete = await prisma.usersAthlete.findFirst({
       where: {
         userId,
-        athleteId,
+        id: athleteId,
       },
     });
     return !!athlete;
@@ -16,21 +16,25 @@ export const checkAthleteOwnership = async (userId, athleteId) => {
     throw new Error('Failed to verify athlete ownership', 500);
   }
 };
-
-export const updateTeam = async (userId, { attacker, defender, middle }) => {
+export const updateTeam = async (userId, attacker, defender, middle) => {
   try {
     const updatedTeam = await prisma.myTeam.upsert({
       where: { userId },
-      update: { attackerId: attacker, defenderId: defender, middleId: middle },
+      update: {
+        attacker,
+        defender,
+        middle,
+      },
       create: {
         userId,
-        attackerId: attacker,
-        defenderId: defender,
-        middleId: middle,
+        attacker,
+        defender,
+        middle,
       },
     });
     return updatedTeam;
   } catch (error) {
+    logger.error(`Failed to update team. ${error}`);
     throw new ApiError('Failed to update team', 500);
   }
 };
@@ -73,6 +77,7 @@ export const createEnhancedAthlete = async (userId, { athleteId, enhance }) => {
     });
     return newAthlete;
   } catch (error) {
+    logger.error(`Failed to create enhanced athlete. ${error}`);
     throw new ApiError('Failed to create enhanced athlete', 500);
   }
 };
@@ -180,4 +185,19 @@ export const getAthleteById = async (userId, athleteId) => {
   } catch (error) {
     throw new ApiError('Failed to retrieve athlete', 500);
   }
+};
+
+export const checkIfAthletesInTeam = async (userId, athleteIds) => {
+  const teamAthletes = await prisma.myTeam.findMany({
+    where: {
+      AND: [{ userId }],
+      OR: [
+        { attacker: { in: athleteIds } },
+        { defender: { in: athleteIds } },
+        { middle: { in: athleteIds } },
+      ],
+    },
+  });
+
+  return teamAthletes.length > 0;
 };
