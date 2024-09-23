@@ -4,6 +4,7 @@ import env from './env.js';
 import Utils from './utils.js';
 import bcrypt from 'bcryptjs';
 
+
 const { SERVER_ADMIN_ID, SERVER_ADMIN_PW } = env;
 const prisma = new PrismaClient();
 
@@ -47,4 +48,4 @@ const prisma = new PrismaClient();
 /**
  * Prisma 클라이언트를 내보내어 다른 모듈에서 사용할 수 있게 합니다.
  */
-export { prisma };
+export default { prisma };

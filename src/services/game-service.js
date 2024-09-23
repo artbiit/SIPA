@@ -1,4 +1,4 @@
-import { getTop100MMR, getMMRByUserId } from '../repositories/game-repository';
+import { getTop100MMR, getMMRByUserId } from '../repositories/game-repository.js';
 
 export const TopMMR = async ({ userId = null }) => {
   let result = {};
