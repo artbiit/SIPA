@@ -6,12 +6,15 @@ import bodyParser from 'body-parser';
 import logger from './lib/logger.js';
 import allRoutes from './routes/routes.js';
 import ApiError from './errors/api-error.js';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './lib/swagger.js';
+
 const { SERVER_PORT } = env;
 const app = express();
 app.use(helmet());
 app.use(cors());
 app.use(bodyParser.json());
-
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 const errorHandler = (error, req) => {
   let message = 'Internal Server Error';
   let statusCode = 500;

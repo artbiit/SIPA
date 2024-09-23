@@ -1,21 +1,47 @@
-import { registerUser, loginUser, updateUserTeam } from '../services/user-service.js';
+import {
+  registerUser,
+  loginUser,
+  getSpecificUser,
+  getUserAthletes,
+  enhanceAthletes,
+  sellAthlete,
+} from '../services/user-service.js';
 
-const authRoutes = [
+const routes = [
   {
     method: 'post',
-    url: '/users/signup', // 회원가입
+    url: '/users/signup',
     action: registerUser,
   },
   {
     method: 'post',
-    url: '/users/login', // 로그인
+    url: '/users/login',
     action: loginUser,
   },
   {
-    method: 'patch',
-    url: '/users/team', //팀편성
-    action: updateUserTeam,
+    method: 'get',
+    url: '/users/athletes',
+    action: getUserAthletes,
+    authRequired: true,
+  },
+  {
+    method: 'post',
+    url: '/users/athletes/training',
+    action: enhanceAthletes,
+    authRequired: true,
+  },
+  {
+    method: 'post',
+    url: '/users/athletes/sell',
+    action: sellAthlete,
+    authRequired: true,
+  },
+  {
+    method: 'get',
+    url: '/users/:userId',
+    action: getSpecificUser,
+    authRequired: false,
   },
 ];
 
-export default authRoutes;
+export default routes;

@@ -4,7 +4,12 @@ import ApiError from '../errors/api-error.js';
 import env from '../lib/env.js';
 import Utils from '../lib/utils.js';
 
-import { findUserById, createUser, updateUserCash } from '../repositories/user-repository.js';
+import {
+  createUser,
+  updateUserCash,
+  getAthletesByUserId,
+  findUserByUserId,
+} from '../repositories/user-repository.js';
 import {
   checkAthleteOwnership,
   updateTeam,
@@ -13,20 +18,11 @@ import {
   createEnhancedAthlete,
   getAthleteById,
   deleteAthleteById,
-  getAthletesByUserId,
 } from '../repositories/athlete-repository.js';
 import logger from '../lib/logger.js';
 import { findUserByUsername } from '../repositories/user-repository.js';
 
-const {
-  JWT_SECRET,
-  JWT_EXPIRES_IN,
-  JWT_ALGORITHM,
-  JWT_ISSUER,
-  JWT_AUDIENCE,
-  JWT_REFRESH_EXPIRES_IN,
-  JWT_REFRESH_SECRET,
-} = env;
+const { JWT_SECRET, JWT_EXPIRES_IN, JWT_ALGORITHM, JWT_ISSUER, JWT_AUDIENCE } = env;
 
 export const registerUser = async ({ userId, password, userName }) => {
   if (!Utils.testUsername(userId)) {
@@ -50,11 +46,11 @@ export const registerUser = async ({ userId, password, userName }) => {
     );
   }
 
-  const pepperedPassword = Utils.getPepperedPassword(password);
-  const hashedPassword = await bcrypt.hash(pepperedPassword, 10);
+  // const pepperedPassword = Utils.getPepperedPassword(password);
+  // const hashedPassword = await bcrypt.hash(pepperedPassword, 10);
 
   try {
-    const user = await createUser(userId, hashedPassword, userName);
+    const user = await createUser(userId, password, userName);
     logger.info(`User registered: ${userId}`);
     return { userId: user.id, nickname: user.nickname };
   } catch (error) {
@@ -69,13 +65,11 @@ export const loginUser = async ({ userId, password }) => {
     throw new ApiError('Invalid username or password', 401);
   }
 
-  const pepperedPassword = Utils.getPepperedPassword(password);
-  const validPassword = await bcrypt.compare(pepperedPassword, user.password);
-  if (!validPassword) {
+  //const pepperedPassword = Utils.getPepperedPassword(password);
+  //const validPassword = await bcrypt.compare(pepperedPassword, user.password);
+  if (!(user.password === password)) {
     throw new ApiError('Invalid username or password', 401);
   }
-
-  await deleteSelectedCharacterForUser(user.id);
 
   const token = jwt.sign({ userId, username: user.username }, JWT_SECRET, {
     expiresIn: JWT_EXPIRES_IN,
@@ -84,19 +78,7 @@ export const loginUser = async ({ userId, password }) => {
     audience: JWT_AUDIENCE,
   });
 
-  // Refresh Token 발급
-  const refreshToken = jwt.sign(
-    { Id: user.id, userId: user.userId, username: user.username },
-    JWT_REFRESH_SECRET,
-    {
-      expiresIn: JWT_REFRESH_EXPIRES_IN,
-      algorithm: JWT_ALGORITHM,
-      issuer: JWT_ISSUER,
-      audience: JWT_AUDIENCE,
-    },
-  );
-
-  return { token, refreshToken };
+  return { token };
 };
 
 export const updateUserTeam = async ({ Id = null, attacker, defender, middle }) => {
@@ -158,24 +140,21 @@ export const sellAthlete = async ({ Id = null, athleteId }) => {
 export const getUserAthletes = async ({ Id = null }) => {
   const athletes = await getAthletesByUserId(Id);
 
-  if (!athletes.length) {
-    throw new ApiError('No athletes found for the user', 404);
-  }
-
-  return athletes;
+  return { athletes: athletes };
 };
 
-export const getSpecificUser = async ({ Id = null, userName }) => {
-  const user = await findUserByUsername(userName);
+export const getSpecificUser = async ({ Id = null, userId }) => {
+  console.log(Id);
+  const user = await findUserByUserId(userId, true);
 
   if (!user) {
     throw new ApiError('User not found', 404);
   }
 
   let result = {
-    userId: user.id,
-    name: user.name,
-    score: user.score,
+    userId: user.userId,
+    name: user.userName,
+    score: user.MMR?.score ?? 0,
   };
 
   if (Id !== null) {

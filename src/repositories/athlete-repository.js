@@ -1,5 +1,7 @@
-import ApiError from '../errors/api-error';
-import Utils from '../lib/utils';
+import ApiError from '../errors/api-error.js';
+import logger from '../lib/logger.js';
+import Utils from '../lib/utils.js';
+import { prisma } from '../lib/prisma.js';
 
 export const checkAthleteOwnership = async (userId, athleteId) => {
   try {
@@ -11,7 +13,7 @@ export const checkAthleteOwnership = async (userId, athleteId) => {
     });
     return !!athlete;
   } catch (error) {
-    throw new ApiError('Failed to verify athlete ownership', 500);
+    throw new Error('Failed to verify athlete ownership', 500);
   }
 };
 
@@ -89,9 +91,7 @@ export const deleteAthleteById = async (athleteId) => {
 
 export const drawAthletes = async (gatchaCount) => {
   try {
-    const athletesData = await prisma.athlete.findMany({
-      select: { id: true, name: true, spawnRate: true },
-    });
+    const athletesData = await prisma.athlete.findMany();
 
     const athletes = [];
     for (let i = 0; i < gatchaCount; i++) {
@@ -101,7 +101,20 @@ export const drawAthletes = async (gatchaCount) => {
 
     return athletes;
   } catch (error) {
+    console.error(error);
     throw new ApiError('Failed to draw athletes', 500);
+  }
+};
+
+const getWeightedRandomAthletes = (athletesData) => {
+  const totalWeight = athletesData.reduce((sum, athlete) => sum + athlete.spawnRate, 0);
+  let random = Math.random() * totalWeight;
+
+  for (const athlete of athletesData) {
+    if (random < athlete.spawnRate) {
+      return athlete;
+    }
+    random -= athlete.spawnRate;
   }
 };
 
@@ -129,5 +142,42 @@ export const getUserAthletes = async (userId) => {
     });
   } catch (error) {
     throw new ApiError('Failed to retrieve user athletes', 500);
+  }
+};
+
+export const getPaginatedAthletes = async (page, pageCount) => {
+  try {
+    // 총 선수 수 가져오기
+    const totalCount = await prisma.athlete.count();
+
+    // 요청한 페이지에 해당하는 선수 목록 가져오기
+    const athletes = await prisma.athlete.findMany({
+      skip: page * pageCount,
+      take: pageCount,
+      select: {
+        id: true,
+        name: true,
+        power: true,
+        spawnRate: true,
+      },
+    });
+
+    return { athletes, totalCount };
+  } catch (error) {
+    throw new ApiError('Failed to retrieve athletes', 500);
+  }
+};
+
+export const getAthleteById = async (userId, athleteId) => {
+  try {
+    const athlete = await prisma.usersAthlete.findFirst({
+      where: {
+        id: athleteId,
+        userId: userId,
+      },
+    });
+    return athlete;
+  } catch (error) {
+    throw new ApiError('Failed to retrieve athlete', 500);
   }
 };

@@ -1,29 +1,39 @@
 import { prisma } from '../lib/prisma.js';
 
-export const createUser = async (userId, password, username, cash = 10000) => {
-  return await prisma.user.create({
+export const createUser = async (userId, password, userName, cash = 10000) => {
+  return await prisma.users.create({
     data: {
       userId,
       password,
-      username,
+      userName,
       cash,
     },
   });
 };
 
 export const findUserById = async (userId) => {
-  return await prisma.user.findUnique({ where: { id: userId } });
+  return await prisma.users.findUnique({ where: { id: userId } });
 };
 
+export const findUserByUserId = async (userId, includeInfo = false) => {
+  return await prisma.users.findUnique({
+    where: { userId },
+    include: includeInfo
+      ? {
+          MMR: true,
+        }
+      : {},
+  });
+};
 export const findUserByUsername = async (userName) => {
-  return await prisma.user.findUnique({
+  return await prisma.users.findUnique({
     where: { username: userName },
   });
 };
 
 export const updateUserCash = async (userId, cash) => {
   try {
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await prisma.users.update({
       where: { id: userId },
       data: { cash: { increment: cash } },
       select: { cash: true },

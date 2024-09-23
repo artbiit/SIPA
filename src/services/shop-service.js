@@ -1,8 +1,6 @@
-import {
-  updateUserCash,
-  drawAthletes,
-  addAthletesToUser,
-} from '../repositories/user-repository.js';
+import { updateUserCash, findUserById } from '../repositories/user-repository.js';
+import { addAthletesToUser, drawAthletes } from '../repositories/athlete-repository.js';
+import ApiError from '../errors/api-error.js';
 
 import { prisma } from '../lib/prisma.js';
 export const purchaseCash = async ({ Id = null, cash }) => {
@@ -32,7 +30,7 @@ export const gachaAthletes = async ({ Id = null, gatcha }) => {
     const athletes = await drawAthletes(gatcha);
 
     await addAthletesToUser(Id, athletes);
-
-    return { athletes };
+    const user = await findUserById(Id);
+    return { cash: user.cash, athletes };
   });
 };
