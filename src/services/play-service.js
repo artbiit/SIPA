@@ -6,7 +6,7 @@ const WEIGHTS_ATTACKER = {
   speed: 0.2,
   scoringAbility: 0.4,
   power: 0.25,
-  defense: 0.05,
+  defence: 0.05,
   stamina: 0.1,
 };
 
@@ -14,7 +14,7 @@ const WEIGHTS_MIDFIELDER = {
   speed: 0.25,
   scoringAbility: 0.25,
   power: 0.25,
-  defense: 0.25,
+  defence: 0.25,
   stamina: 0.25,
 };
 
@@ -22,27 +22,32 @@ const WEIGHTS_DEFENDER = {
   speed: 0.1,
   scoringAbility: 0.05,
   power: 0.1,
-  defense: 0.5,
+  defence: 0.5,
   stamina: 0.2,
 };
 
 // 각 선수의 점수를 계산하는 함수 (포지션별 가중치를 사용)
 const calculatePlayerScore = (player, weights) => {
-  return (
+
+  const score = (
     player.speed * weights.speed +
     player.scoringAbility * weights.scoringAbility +
     player.power * weights.power +
-    player.defense * weights.defense +
+    player.defence * weights.defence +
     player.stamina * weights.stamina
   );
+
+  console.log(player.speed);
+
+  return score;
 };
 
 // 팀의 점수를 계산하는 함수 (포지션별 가중치 적용)
 const calculateTeamScore = (team) => {
-  console.log(team);
   const attackerScore = calculatePlayerScore(team.attacker, WEIGHTS_ATTACKER);
   const middleScore = calculatePlayerScore(team.middle, WEIGHTS_MIDFIELDER);
   const defenderScore = calculatePlayerScore(team.defender, WEIGHTS_DEFENDER);
+  console.log(attackerScore);
 
   return attackerScore + middleScore + defenderScore;
 };

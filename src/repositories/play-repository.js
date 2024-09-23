@@ -23,7 +23,7 @@ export const getMyTeam = async (userId) => {
       defender: await getAthleteById(myTeam[0].UsersAthlete_MyTeam_defenderToUsersAthlete.athleteId),
       middle: await getAthleteById(myTeam[0].UsersAthlete_MyTeam_middleToUsersAthlete.athleteId),
     };
-
+    console.log(team);
     return team;
   } catch (error) {
     console.error('팀을 발견하지 못했습니다.', error);
