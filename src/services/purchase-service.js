@@ -1,6 +1,12 @@
-import { getUserCash, setUserCash } from '../repositories/purchase-repository.js';
+import ApiError from '../errors/api-error.js';
+import {
+  getUserCash,
+  setUserCash,
+  getAthletes,
+  addUsersAthlete,
+} from '../repositories/purchase-repository.js';
 
-export const purchaseCash = async ({ userId = null, cash }) => {
+export const purchaseCash = async ({ userId, cash }) => {
   const result = {};
 
   const userCash = await getUserCash(userId);
@@ -11,28 +17,46 @@ export const purchaseCash = async ({ userId = null, cash }) => {
   return result;
 };
 
-export const gacha = async ({ userId = null }) => {
+// amount는 정수임
+export const gacha = async ({ userId, amount }) => {
   const result = {};
 
   // WARN: 임시로 정해둔 상수
-  const GACHA_PRICE = 100;
+  const GACHA_PRICE = 1000;
 
   const userCash = await getUserCash(userId);
-  if (userCash - GACHA_PRICE < 0) {
-    // TODO: 돈 부족 로직
+  if (userCash.cash - GACHA_PRICE < 0) {
+    throw new ApiError('Not enough cash', 403);
   }
 
-  // TODO: 팩 몇 개 깔건지 로직 구현
-  const amount = 1; // WARN: 임시로 상수 넣어뒀음
   const FINAL_PRICE = GACHA_PRICE * amount;
 
   await setUserCash(userId, userCash.cash - FINAL_PRICE);
 
-  // TODO: 뽑은 선수의 능력치 및 등급 적용 로직 추가
-  const rand = (min, max) => Math.floor(Math.random() * (max - min)) + min;
-  const athleteIds = [];
+  const athletes = await getAthletes();
+  const totalWeight = athletes.reduce((total, athlete) => total + athlete.spawnRate, 0);
+  const randomGeneratedAthletes = [];
+  const weightRandomId = (rand) => {
+    for (let i = 0; i < athletes.length; i++) {
+      if (athletes[i].spawnRate >= rand) {
+        return athletes[i].id;
+      }
+      rand -= athletes[i].spawnRate;
+    }
+  };
+
   for (let i = 0; i < amount; i++) {
-    // TODO: max값을 Athlete 테이블의 갯수로 정하기
-    athleteIds.push(rand(0, 40));
+    const rand = Math.random() * totalWeight + 1;
+    // UsersAthlete: id, userId, athleteId, enhance, createdAt
+    randomGeneratedAthletes.push({
+      userId: userId.toString(),
+      athleteId: weightRandomId(rand),
+      enhance: 0,
+    });
   }
+
+  await addUsersAthlete(randomGeneratedAthletes);
+
+  result.data = randomGeneratedAthletes;
+  return result;
 };
