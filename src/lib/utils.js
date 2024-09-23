@@ -51,9 +51,7 @@ class Utils extends NoInstance {
    * @returns {boolean} - 규칙에 맞으면 true, 아니면 false
    */
   static testPassword = (password) =>
-    /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*])[a-zA-Z\d!@#$%^&*]{6,}$/.test(
-      password
-    );
+    /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*])[a-zA-Z\d!@#$%^&*]{6,}$/.test(password);
 
   /**
    * 유저 닉네임이 규칙에 맞는지 검사하는 함수입니다.
@@ -63,9 +61,56 @@ class Utils extends NoInstance {
    * @returns {boolean} - 규칙에 맞으면 true, 아니면 false
    */
   static testNickname = (nickname) =>
-    /^(?=.*[가-힣])([가-힣a-zA-Z0-9]{1,16})$|^[a-zA-Z0-9]{1,32}$/.test(
-      nickname
-    );
+    /^(?=.*[가-힣])([가-힣a-zA-Z0-9]{1,16})$|^[a-zA-Z0-9]{1,32}$/.test(nickname);
+
+  /**  가중치 기반 랜덤 선택 함수*/
+  static getWeightedRandomAthletes = (athletesData) => {
+    const totalWeight = athletesData.reduce((sum, athlete) => sum + athlete.spawnRate, 0);
+    let random = Math.random() * totalWeight;
+
+    for (const athlete of athletesData) {
+      if (random < athlete.spawnRate) {
+        return athlete;
+      }
+      random -= athlete.spawnRate;
+    }
+  };
+
+  /**
+   * 0과 1 사이의 무작위 수를 반환합니다.
+   * @returns {number} 무작위 수
+   */
+  static Random01() {
+    const randomBytes = crypto.randomBytes(4);
+    const randomNumber = randomBytes.readUInt32BE(0);
+    return randomNumber / 0xffffffff;
+  }
+
+  /**
+   * 주어진 범위 내에서 무작위 수를 반환합니다.
+   * @param {number} [min=Number.MIN_VALUE] 최소값
+   * @param {number} [max=Number.MAX_VALUE] 최대값
+   * @returns {number} 무작위 수
+   */
+  static RandomRange(min = Number.MIN_VALUE, max = Number.MAX_VALUE) {
+    if (min > max) {
+      const tmp = min;
+      min = max;
+      max = tmp;
+    }
+
+    return this.Random01() * (max - min) + min;
+  }
+
+  /**
+   * 주어진 범위 내에서 무작위 정수를 반환합니다.
+   * @param {number} [min=Number.MIN_VALUE] 최소값
+   * @param {number} [max=Number.MAX_VALUE] 최대값
+   * @returns {number} 무작위 정수
+   */
+  static RandomRangeInt(min = Number.MIN_VALUE, max = Number.MAX_VALUE) {
+    return this.Floor(this.RandomRange(min, max));
+  }
 }
 
 export default Utils;
