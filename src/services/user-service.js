@@ -137,19 +137,21 @@ export const enhanceAthletes = async ({ Id = null, athleteIds }) => {
 };
 
 export const sellAthlete = async ({ Id = null, athleteId }) => {
-  const athlete = await getAthleteById((Id = null), athleteId);
+  return await prisma.$transaction(async (prisma) => {
+    const athlete = await getAthleteById(Id, athleteId);
 
-  if (!athlete) {
-    throw new ApiError('Athlete not found or does not belong to the user.', 404);
-  }
+    if (!athlete) {
+      throw new ApiError('Athlete not found or does not belong to the user.', 404);
+    }
 
-  const cashEarned = athlete.enhance ** athlete.enhance * 1000;
+    const cashEarned = athlete.enhance ** athlete.enhance * 1000;
 
-  await updateUserCash((Id = null), cashEarned);
+    await updateUserCash(Id, cashEarned, prisma);
 
-  await deleteAthleteById(athleteId);
+    await deleteAthleteById(athleteId, prisma);
 
-  return { message: 'Athlete sold successfully', cashEarned };
+    return { message: 'Athlete sold successfully', cashEarned };
+  });
 };
 
 export const getUserAthletes = async ({ Id = null }) => {
@@ -160,6 +162,7 @@ export const getUserAthletes = async ({ Id = null }) => {
 
 export const getSpecificUser = async ({ Id = null, userId }) => {
   if (!userId) {
+    z;
     throw new ApiError('userId can not null', 404);
   }
   const user = await findUserByUserId(userId, true);

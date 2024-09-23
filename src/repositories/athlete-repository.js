@@ -159,16 +159,11 @@ export const getPaginatedAthletes = async (page, pageCount) => {
     const athletes = await prisma.athlete.findMany({
       skip: page * pageCount,
       take: pageCount,
-      select: {
-        id: true,
-        name: true,
-        power: true,
-        spawnRate: true,
-      },
     });
 
     return { athletes, totalCount };
   } catch (error) {
+    logger.error(`Failed to retrieve athletes. ${error}`);
     throw new ApiError('Failed to retrieve athletes', 500);
   }
 };

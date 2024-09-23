@@ -1,15 +1,19 @@
+import { prisma } from '../lib/prisma.js';
+import ApiError from '../errors/api-error.js';
+import Utils from '../lib/utils.js';
+import logger from '../lib/logger.js';
+
 export const findOpponentByMMR = async (userId) => {
   try {
-    const mmrRange = Utils.RandomRangeInt(100, 300);
-    const userMMR = await prisma.mmr.findUnique({ where: { userId } });
+    const userMMR = await prisma.MMR.findUnique({ where: { userId } });
+    const userScore = userMMR?.score || 0;
 
-    const opponents = await prisma.mmr.findMany({
+    const opponents = await prisma.MMR.findMany({
       where: {
-        AND: [
-          { userId: { not: userId } },
-          { value: { gte: userMMR.value - mmrRange, lte: userMMR.value + mmrRange } },
-          { hasFullTeam: true },
-        ],
+        userId: { not: userId },
+      },
+      orderBy: {
+        score: 'asc',
       },
     });
 
@@ -17,20 +21,42 @@ export const findOpponentByMMR = async (userId) => {
       return null;
     }
 
-    const randomOpponent = opponents[Math.floor(Math.random() * opponents.length)];
+    const closestOpponent = opponents.reduce((closest, opponent) => {
+      const currentDiff = Math.abs(opponent.score - userScore);
+      const closestDiff = Math.abs(closest.score - userScore);
+      return currentDiff < closestDiff ? opponent : closest;
+    }, opponents[0]);
 
-    return randomOpponent;
+    return closestOpponent;
   } catch (error) {
+    logger.error(`Failed to find opponent. ${error}`);
     throw new ApiError('Failed to find opponent', 500);
   }
 };
 
 export const updateMMR = async (userId, mmrChange) => {
   try {
-    await prisma.mmr.update({
+    const currentMMR = await prisma.MMR.findUnique({
       where: { userId },
-      data: { value: { increment: mmrChange } },
     });
+
+    if (currentMMR) {
+      const newScore = Math.max(currentMMR.score + mmrChange, 0);
+      await prisma.MMR.update({
+        where: { userId },
+        data: {
+          score: newScore,
+        },
+      });
+    } else {
+      await prisma.MMR.create({
+        data: {
+          userId,
+          score: Math.max(mmrChange, 0),
+          createdAt: new Date(),
+        },
+      });
+    }
   } catch (error) {
     throw new ApiError('Failed to update MMR', 500);
   }
