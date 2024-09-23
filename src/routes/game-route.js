@@ -1,4 +1,4 @@
-import { TopMMR } from '../services/game-service';
+import { TopMMR } from '../services/game-service.js';
 
 const routes = [
   {

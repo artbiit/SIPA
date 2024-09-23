@@ -1,4 +1,4 @@
-import { Friendly_Match } from '../services/play-service';
+import { Friendly_Match } from '../services/play-service.js';
 
 const routes = [
   {

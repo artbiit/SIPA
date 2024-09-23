@@ -5,8 +5,8 @@ import gameRoutes from './game-route.js';
 import playRoutes from './play-route.js'
 
 const allRoutes = [
-  gameRoutes,
-  playRoutes,
+  ...gameRoutes,
+  ...playRoutes,
   // 다른 라우트 추가 가능
 ];
 

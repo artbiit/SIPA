@@ -1,5 +1,5 @@
-import { getMyTeam, getEnemyTeam } from '../repositories/play-repository';
-import ApiError from '../errors/api-error';
+import { getMyTeam, getEnemyTeam } from '../repositories/play-repository.js';
+import ApiError from '../errors/api-error.js';
 
 // 각 포지션별 가중치 설정
 const WEIGHTS_ATTACKER = {
@@ -72,7 +72,7 @@ const playGame = (teamA, teamB) => {
 };
 
 export const Friendly_Match = async ({ userId = null, enemyUserName }) => {
-  let result = {};
+  // let result = {};
 
   if (!enemyUserName) {
     throw new ApiError('해당 사용자를 찾지 못했습니다.', 404);
