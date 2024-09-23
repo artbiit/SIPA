@@ -49,7 +49,7 @@ export const gacha = async ({ userId, amount }) => {
     const rand = Math.random() * totalWeight + 1;
     // UsersAthlete: id, userId, athleteId, enhance, createdAt
     randomGeneratedAthletes.push({
-      userId: userId.toString(),
+      userId: userId,
       athleteId: weightRandomId(rand),
       enhance: 0,
     });
