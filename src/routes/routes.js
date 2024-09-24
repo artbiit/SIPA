@@ -19,12 +19,12 @@ const allRoutes = [
 // 파라미터 및 미들웨어 자동 설정
 allRoutes.forEach((route) => {
   route.requiredParams = Utils.getFunctionParams(route.action);
+  route.middleware = [];
+  // route.middleware = [tokenVerify];
 
-  route.middleware = [tokenVerify];
-
-  if (route.authRequired) {
-    route.middleware.push(authenticateToken);
-  }
+  // if (route.authRequired) {
+  //   route.middleware.push(authenticateToken);
+  // }
 });
 
 export default allRoutes;

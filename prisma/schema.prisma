@@ -8,86 +8,74 @@ datasource db {
   shadowDatabaseUrl = env("SHADOW_DB_URL")
 }
 
-model Users {
-  id        Int       @id @default(autoincrement())
-  userId    String    @unique @db.VarChar(15)
-  password  String    @db.VarChar(15)
-  userName  String    @db.VarChar(16)
-  cash      Int       @default(0)
-  createdAt DateTime  @default(now())
-
-  // Relations
-  UsersAthlete UsersAthlete[]
-  MyTeam       MyTeam[]
-  MMR          MMR?
-}
-
-model UsersAthlete {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  athleteId Int
-  enhance   Int
-  createdAt DateTime  @default(now())
-
-  // Relations
-  Users   Users   @relation(fields: [userId], references: [id])
-  Athlete Athlete @relation(fields: [athleteId], references: [id])
-
-  @@index([userId])
-  @@index([athleteId])
-}
-
 model Athlete {
-  id            Int    @id @default(autoincrement())
-  athleteName   String @db.VarChar(10)
-  speed         Int
+  id             Int                 @id @default(autoincrement())
+  athleteName    String              @db.VarChar(10)
+  speed          Int
   scoringAbility Int
-  power         Int
-  defence       Int
-  stamina       Int
-  athleteType   AthleteType
-  spawnRate     Int
-
-  // Relations
-  UsersAthlete UsersAthlete[]
-  attackerInTeams MyTeam[] @relation("attackerRelation")
-  defenderInTeams MyTeam[] @relation("defenderRelation")
-  middleInTeams   MyTeam[] @relation("middleRelation")
-}
-
-model MyTeam {
-  id       Int    @id @default(autoincrement())
-  userId   Int
-  attacker Int
-  defender Int
-  middle   Int
-  createdAt DateTime  @default(now())
-
-  // Relations
-  Users    Users     @relation(fields: [userId], references: [id])
-  attackerAthlete Athlete @relation("attackerRelation", fields: [attacker], references: [id])
-  defenderAthlete Athlete @relation("defenderRelation", fields: [defender], references: [id])
-  middleAthlete   Athlete @relation("middleRelation", fields: [middle], references: [id])
-
-  @@index([userId])
-  @@index([attacker])
-  @@index([defender])
-  @@index([middle])
+  power          Int
+  defence        Int
+  stamina        Int
+  athleteType    Athlete_athleteType
+  spawnRate      Int
+  UsersAthlete   UsersAthlete[]
 }
 
 model MMR {
-  id        Int    @id @default(autoincrement())
-  userId    Int
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
   score     Int
-  createdAt DateTime  @default(now())
+  createdAt DateTime @default(now())
+  Users     Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
 
-  // Relations
-  Users     Users @relation(fields: [userId], references: [id])
+model MyTeam {
+  id                                         Int          @id @default(autoincrement())
+  userId                                     Int          @unique
+  attacker                                   Int          @unique
+  defender                                   Int          @unique
+  middle                                     Int          @unique
+  createdAt                                  DateTime     @default(now())
+  UsersAthlete_MyTeam_attackerToUsersAthlete UsersAthlete @relation("MyTeam_attackerToUsersAthlete", fields: [attacker], references: [id])
+  UsersAthlete_MyTeam_defenderToUsersAthlete UsersAthlete @relation("MyTeam_defenderToUsersAthlete", fields: [defender], references: [id])
+  UsersAthlete_MyTeam_middleToUsersAthlete   UsersAthlete @relation("MyTeam_middleToUsersAthlete", fields: [middle], references: [id])
+  Users                                      Users        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([attacker], map: "MyTeam_attacker_fkey_idx")
+  @@index([defender], map: "MyTeam_defender_fkey_idx")
+  @@index([middle], map: "MyTeam_middle_fkey_idx")
   @@index([userId])
 }
 
-enum AthleteType {
+model Users {
+  id           Int            @id @default(autoincrement())
+  userId       String         @unique @db.VarChar(15)
+  password     String         @db.VarChar(15)
+  userName     String         @db.VarChar(16)
+  cash         Int            @default(0)
+  createdAt    DateTime       @default(now())
+  MMR          MMR?
+  MyTeam       MyTeam?
+  UsersAthlete UsersAthlete[]
+}
+
+model UsersAthlete {
+  id                                   Int      @id @default(autoincrement())
+  userId                               Int
+  athleteId                            Int
+  enhance                              Int
+  createdAt                            DateTime @default(now())
+  MyTeam_MyTeam_attackerToUsersAthlete MyTeam?  @relation("MyTeam_attackerToUsersAthlete")
+  MyTeam_MyTeam_defenderToUsersAthlete MyTeam?  @relation("MyTeam_defenderToUsersAthlete")
+  MyTeam_MyTeam_middleToUsersAthlete   MyTeam?  @relation("MyTeam_middleToUsersAthlete")
+  Athlete                              Athlete  @relation(fields: [athleteId], references: [id])
+  Users                                Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([athleteId], map: "UsersAthlete_athleteId_fkey")
+  @@index([userId], map: "UsersAthlete_userId_fkey")
+}
+
+enum Athlete_athleteType {
   ATTACKER
   DEFENDER
   MIDDLE
