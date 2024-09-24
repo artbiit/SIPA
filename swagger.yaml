@@ -1,0 +1,295 @@
+openapi: 3.0.0
+info:
+  title: Game, Shop, Play, User Service API
+  version: 1.0.0
+  description: API documentation for game, shop, play, and user-related functionalities
+
+paths:
+  /users/signup:
+    post:
+      summary: "User Signup"
+      description: "Register a new user"
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - password
+                - userName
+              properties:
+                userId:
+                  type: string
+                password:
+                  type: string
+                userName:
+                  type: string
+      responses:
+        201:
+          description: "User created successfully"
+        400:
+          description: "Invalid input"
+
+  /users/login:
+    post:
+      summary: "User Login"
+      description: "Authenticate a user and return a token"
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - password
+              properties:
+                userId:
+                  type: string
+                password:
+                  type: string
+      responses:
+        200:
+          description: "User logged in"
+        401:
+          description: "Unauthorized"
+
+  /users/athletes:
+    get:
+      summary: "Get User's Athletes"
+      description: "Retrieve all athletes owned by the authenticated user"
+      tags:
+        - Users
+      responses:
+        200:
+          description: "List of user's athletes"
+        401:
+          description: "Unauthorized"
+
+  /users/team:
+    patch:
+      summary: "Update User Team"
+      description: "Update the user's team formation with 3 athletes"
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - attacker
+                - defender
+                - middle
+              properties:
+                attacker:
+                  type: integer
+                  description: "ID of the attacker athlete"
+                defender:
+                  type: integer
+                  description: "ID of the defender athlete"
+                middle:
+                  type: integer
+                  description: "ID of the middle athlete"
+      responses:
+        200:
+          description: "Team updated successfully"
+        400:
+          description: "Invalid input"
+
+  /users/athletes/training:
+    post:
+      summary: "Enhance Athletes"
+      description: "Enhance the user's athletes by combining 3 identical athletes"
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - athletes
+              properties:
+                athletes:
+                  type: array
+                  items:
+                    type: integer
+                  description: "Array of 3 athlete IDs for enhancement"
+      responses:
+        200:
+          description: "Athletes enhanced successfully"
+        400:
+          description: "Enhancement failed"
+
+  /users/athletes/sell:
+    post:
+      summary: "Sell Athlete"
+      description: "Sell an athlete for cash based on enhancement level"
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - athleteId
+              properties:
+                athleteId:
+                  type: integer
+                  description: "ID of the athlete to be sold"
+      responses:
+        200:
+          description: "Athlete sold successfully"
+        400:
+          description: "Sell failed"
+
+  /users/{userId}:
+    get:
+      summary: "Get Specific User Details"
+      description: "Retrieve the details of a specific user"
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: "User ID"
+      responses:
+        200:
+          description: "User details returned"
+        400:
+          description: "Invalid input"
+
+  /shop/purchase:
+    post:
+      summary: "Purchase Cash"
+      description: "Add cash to the user's account"
+      tags:
+        - Shop
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cash
+              properties:
+                cash:
+                  type: integer
+                  description: "Amount of cash to purchase"
+      responses:
+        200:
+          description: "Cash purchased successfully"
+        400:
+          description: "Invalid cash amount"
+
+  /shop/gacha:
+    post:
+      summary: "Gacha Athlete Draw"
+      description: "Perform a gacha draw to get random athletes"
+      tags:
+        - Shop
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - gatcha
+              properties:
+                gatcha:
+                  type: integer
+                  description: "Number of gacha draws"
+      responses:
+        200:
+          description: "Athletes drawn successfully"
+        400:
+          description: "Insufficient cash or invalid gatcha count"
+
+  /play/random-match:
+    post:
+      summary: "Play Random Match"
+      description: "Simulate a random match with a similar MMR opponent"
+      tags:
+        - Play
+      responses:
+        200:
+          description: "Match result returned"
+        404:
+          description: "No suitable opponent found"
+
+  /play/friendly-match:
+    post:
+      summary: "Play Friendly Match"
+      description: "Simulate a friendly match with a specified opponent"
+      tags:
+        - Play
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - opponentId
+              properties:
+                opponentId:
+                  type: integer
+                  description: "ID of the opponent"
+      responses:
+        200:
+          description: "Match result returned"
+        400:
+          description: "Opponent has not registered a full team"
+
+  /game/ranking:
+    get:
+      summary: "Get Top 100 MMR Rankings"
+      description: "Retrieve the top 100 users based on MMR ranking"
+      tags:
+        - Game
+      responses:
+        200:
+          description: "Top 100 MMR rankings returned"
+        401:
+          description: "Unauthorized"
+
+  /game/athletes:
+    get:
+      summary: "Get Paginated List of Athletes"
+      description: "Retrieve a paginated list of athletes"
+      tags:
+        - Game
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 0
+          description: "Page number"
+        - in: query
+          name: pageCount
+          schema:
+            type: integer
+            default: 10
+          description: "Number of athletes per page"
+      responses:
+        200:
+          description: "List of athletes returned"
+        400:
+          description: "Invalid pagination parameters"

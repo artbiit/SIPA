@@ -1,26 +1,10 @@
-import swaggerJSDoc from 'swagger-jsdoc';
+import fs from 'fs';
+import YAML from 'yaml';
 
-const swaggerDefinition = {
-  openapi: '3.0.0',
-  info: {
-    title: 'API Documentation',
-    version: '1.0.0',
-    description: 'This is the API documentation for the project',
-  },
-  servers: [
-    {
-      url: 'http://localhost:3000', // 실제 서비스 URL에 맞게 수정
-      description: 'Development server',
-    },
-  ],
-};
+const yamlFilePath = './swagger.yaml';
 
-const options = {
-  swaggerDefinition,
-  apis: ['./src/services/*.js'], // API 경로에 맞게 수정
-};
+const fileContents = fs.readFileSync(yamlFilePath, 'utf8');
 
-// swagger-jsdoc로 Swagger 문서 생성
-const swaggerSpec = swaggerJSDoc(options);
+const swaggerDocument = YAML.parse(fileContents);
 
-export default swaggerSpec;
+export default swaggerDocument;

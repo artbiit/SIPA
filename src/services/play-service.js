@@ -3,6 +3,20 @@ import { findOpponentByMMR, updateMMR } from '../repositories/mmr-repository.js'
 import { getUserAthletes } from '../repositories/athlete-repository.js';
 import ApiError from '../errors/api-error.js';
 
+/**
+ * @swagger
+ * /play/random-match:
+ *   post:
+ *     summary: "Play Random Match"
+ *     description: "Simulate a random match with a similar MMR opponent"
+ *     tags:
+ *       - Play
+ *     responses:
+ *       200:
+ *         description: "Match result returned"
+ *       404:
+ *         description: "No suitable opponent found"
+ */
 export const playRandomMatch = async ({ Id = null }) => {
   return await prisma.$transaction(async (prisma) => {
     const opponent = await findOpponentByMMR(Id);
@@ -15,6 +29,32 @@ export const playRandomMatch = async ({ Id = null }) => {
   });
 };
 
+/**
+ * @swagger
+ * /play/friendly-match:
+ *   post:
+ *     summary: "Play Friendly Match"
+ *     description: "Simulate a friendly match with a specified opponent"
+ *     tags:
+ *       - Play
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - opponentId
+ *             properties:
+ *               opponentId:
+ *                 type: integer
+ *                 description: "ID of the opponent"
+ *     responses:
+ *       200:
+ *         description: "Match result returned"
+ *       400:
+ *         description: "Opponent has not registered a full team"
+ */
 export const playFriendlyMatch = async ({ Id = null, opponentId }) => {
   return await prisma.$transaction(async (prisma) => {
     const opponentAthletes = await getUserAthletes(opponentId);
@@ -41,49 +81,48 @@ const calculateMatchResult = async (userId, opponentId) => {
   let userScore = 0;
   let opponentScore = 0;
 
+  const userMidfielder = userAthletes.find((a) => a.Athlete.athleteType === 'MIDDLE');
+  const opponentMidfielder = opponentAthletes.find((a) => a.Athlete.athleteType === 'MIDDLE');
+
+  const userMidfieldControl =
+    (userMidfielder.Athlete.scoringAbility + userMidfielder.Athlete.power) *
+      positionWeights.MIDDLE.scoringAbility +
+    userMidfielder.enhance;
+  const opponentMidfieldControl =
+    (opponentMidfielder.Athlete.scoringAbility + opponentMidfielder.Athlete.power) *
+      positionWeights.MIDDLE.scoringAbility +
+    opponentMidfielder.enhance;
+
+  const userAttacker = userAthletes.find((a) => a.Athlete.athleteType === 'ATTACKER');
+  const opponentDefender = opponentAthletes.find((a) => a.Athlete.athleteType === 'DEFENDER');
+
+  const userAttackPower =
+    userAttacker.Athlete.scoringAbility * positionWeights.ATTACKER.scoringAbility +
+    userAttacker.enhance;
+  const opponentDefencePower =
+    opponentDefender.Athlete.defence * positionWeights.DEFENDER.defence + opponentDefender.enhance;
+
+  const opponentAttacker = opponentAthletes.find((a) => a.Athlete.athleteType === 'ATTACKER');
+  const userDefender = userAthletes.find((a) => a.Athlete.athleteType === 'DEFENDER');
+
+  const opponentAttackPower =
+    opponentAttacker.Athlete.scoringAbility * positionWeights.ATTACKER.scoringAbility +
+    opponentAttacker.enhance;
+  const userDefencePower =
+    userDefender.Athlete.defence * positionWeights.DEFENDER.defence + userDefender.enhance;
+
   for (let i = 0; i < 11; i++) {
-    const userMidfielder = userAthletes.find((a) => a.Athlete.athleteType === 'MIDDLE');
-    const opponentMidfielder = opponentAthletes.find((a) => a.Athlete.athleteType === 'MIDDLE');
-
-    const userMidfieldControl =
-      (userMidfielder.Athlete.scoringAbility + userMidfielder.Athlete.power) *
-        positionWeights.MIDDLE.scoringAbility +
-      userMidfielder.enhance;
-    const opponentMidfieldControl =
-      (opponentMidfielder.Athlete.scoringAbility + opponentMidfielder.Athlete.power) *
-        positionWeights.MIDDLE.scoringAbility +
-      opponentMidfielder.enhance;
-
     const midfieldResult =
       Math.random() * userMidfieldControl - Math.random() * opponentMidfieldControl;
 
     let isUserAttacking = midfieldResult > 0;
 
     if (isUserAttacking) {
-      const userAttacker = userAthletes.find((a) => a.Athlete.athleteType === 'ATTACKER');
-      const opponentDefender = opponentAthletes.find((a) => a.Athlete.athleteType === 'DEFENDER');
-
-      const userAttackPower =
-        userAttacker.Athlete.scoringAbility * positionWeights.ATTACKER.scoringAbility +
-        userAttacker.enhance;
-      const opponentDefencePower =
-        opponentDefender.Athlete.defence * positionWeights.DEFENDER.defence +
-        opponentDefender.enhance;
-
       const attackResult = Math.random() * (userAttackPower - opponentDefencePower);
       if (attackResult > 0) {
         userScore++;
       }
     } else {
-      const opponentAttacker = opponentAthletes.find((a) => a.Athlete.athleteType === 'ATTACKER');
-      const userDefender = userAthletes.find((a) => a.Athlete.athleteType === 'DEFENDER');
-
-      const opponentAttackPower =
-        opponentAttacker.Athlete.scoringAbility * positionWeights.ATTACKER.scoringAbility +
-        opponentAttacker.enhance;
-      const userDefencePower =
-        userDefender.Athlete.defence * positionWeights.DEFENDER.defence + userDefender.enhance;
-
       const attackResult = Math.random() * (opponentAttackPower - userDefencePower);
       if (attackResult > 0) {
         opponentScore++;

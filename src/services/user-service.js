@@ -25,6 +25,37 @@ import { prisma } from '../lib/prisma.js';
 
 const { JWT_SECRET, JWT_EXPIRES_IN, JWT_ALGORITHM, JWT_ISSUER, JWT_AUDIENCE } = env;
 
+/**
+ * @swagger
+ * /users/signup:
+ *   post:
+ *     summary: "User Signup"
+ *     description: "Register a new user"
+ *     tags:
+ *       - Users
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - password
+ *               - userName
+ *             properties:
+ *               userId:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               userName:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: "User created successfully"
+ *       400:
+ *         description: "Invalid input"
+ */
 export const registerUser = async ({ userId, password, userName }) => {
   if (!Utils.testUsername(userId)) {
     throw new ApiError(
@@ -47,9 +78,6 @@ export const registerUser = async ({ userId, password, userName }) => {
     );
   }
 
-  // const pepperedPassword = Utils.getPepperedPassword(password);
-  // const hashedPassword = await bcrypt.hash(pepperedPassword, 10);
-
   try {
     const user = await createUser(userId, password, userName);
     logger.info(`User registered: ${userId}`);
@@ -60,14 +88,40 @@ export const registerUser = async ({ userId, password, userName }) => {
   }
 };
 
+/**
+ * @swagger
+ * /users/login:
+ *   post:
+ *     summary: "User Login"
+ *     description: "Authenticate a user and return a token"
+ *     tags:
+ *       - Users
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - password
+ *             properties:
+ *               userId:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: "User logged in"
+ *       401:
+ *         description: "Unauthorized"
+ */
 export const loginUser = async ({ userId, password }) => {
   const user = await findUserByUserId(userId);
   if (!user) {
     throw new ApiError('Invalid username or password', 401);
   }
 
-  //const pepperedPassword = Utils.getPepperedPassword(password);
-  //const validPassword = await bcrypt.compare(pepperedPassword, user.password);
   if (!(user.password === password)) {
     throw new ApiError('Invalid username or password', 401);
   }
@@ -82,6 +136,37 @@ export const loginUser = async ({ userId, password }) => {
   return { token };
 };
 
+/**
+ * @swagger
+ * /users/team:
+ *   patch:
+ *     summary: "Update User Team"
+ *     description: "Update the user's team by selecting athletes"
+ *     tags:
+ *       - Users
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - attacker
+ *               - defender
+ *               - middle
+ *             properties:
+ *               attacker:
+ *                 type: integer
+ *               defender:
+ *                 type: integer
+ *               middle:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: "Team updated successfully"
+ *       400:
+ *         description: "Invalid request"
+ */
 export const updateUserTeam = async ({ Id = null, attacker, defender, middle }) => {
   const [isAttackerOwned, isDefenderOwned, isMiddleOwned] = await Promise.all([
     checkAthleteOwnership(Id, attacker),
@@ -96,6 +181,33 @@ export const updateUserTeam = async ({ Id = null, attacker, defender, middle }) 
   return await updateTeam(Id, attacker, defender, middle);
 };
 
+/**
+ * @swagger
+ * /users/athletes/training:
+ *   post:
+ *     summary: "Enhance Athletes"
+ *     description: "Enhance a user's athletes by combining three identical ones"
+ *     tags:
+ *       - Users
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - athleteIds
+ *             properties:
+ *               athleteIds:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *     responses:
+ *       200:
+ *         description: "Athletes enhanced successfully"
+ *       400:
+ *         description: "Invalid athlete data"
+ */
 export const enhanceAthletes = async ({ Id = null, athleteIds }) => {
   return await prisma.$transaction(async (prisma) => {
     const athletes = await getAthletesByIds(Id, athleteIds);
@@ -136,6 +248,31 @@ export const enhanceAthletes = async ({ Id = null, athleteIds }) => {
   });
 };
 
+/**
+ * @swagger
+ * /users/athletes/sell:
+ *   post:
+ *     summary: "Sell Athlete"
+ *     description: "Sell a user's athlete and receive cash based on enhancement level"
+ *     tags:
+ *       - Users
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - athleteId
+ *             properties:
+ *               athleteId:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: "Athlete sold successfully"
+ *       404:
+ *         description: "Athlete not found"
+ */
 export const sellAthlete = async ({ Id = null, athleteId }) => {
   return await prisma.$transaction(async (prisma) => {
     const athlete = await getAthleteById(Id, athleteId);
@@ -154,19 +291,52 @@ export const sellAthlete = async ({ Id = null, athleteId }) => {
   });
 };
 
+/**
+ * @swagger
+ * /users/athletes:
+ *   get:
+ *     summary: "Get User's Athletes"
+ *     description: "Retrieve all athletes owned by the authenticated user"
+ *     tags:
+ *       - Users
+ *     responses:
+ *       200:
+ *         description: "List of user's athletes"
+ *       401:
+ *         description: "Unauthorized"
+ */
 export const getUserAthletes = async ({ Id = null }) => {
   const athletes = await getAthletesByUserId(Id);
-
   return { athletes: athletes };
 };
 
+/**
+ * @swagger
+ * /users/{userId}:
+ *   get:
+ *     summary: "Get Specific User"
+ *     description: "Retrieve details of a specific user"
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: "ID of the user to retrieve"
+ *     responses:
+ *       200:
+ *         description: "User details"
+ *       404:
+ *         description: "User not found"
+ */
 export const getSpecificUser = async ({ Id = null, userId }) => {
   if (!userId) {
-    z;
-    throw new ApiError('userId can not null', 404);
+    throw new ApiError('userId cannot be null', 404);
   }
-  const user = await findUserByUserId(userId, true);
 
+  const user = await findUserByUserId(userId, true);
   if (!user) {
     throw new ApiError('User not found', 404);
   }
