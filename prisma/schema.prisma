@@ -10,6 +10,7 @@ datasource db {
 
 model Athlete {
 <<<<<<< HEAD
+<<<<<<< HEAD
   id                              Int                 @id @default(autoincrement())
   athleteName                     String              @db.VarChar(10)
   speed                           Int
@@ -24,6 +25,8 @@ model Athlete {
   MyTeam_MyTeam_middleToAthlete   MyTeam[]            @relation("MyTeam_middleToAthlete")
   UsersAthlete                    UsersAthlete[]
 =======
+=======
+>>>>>>> origin/feature/cash_purchase
   id             Int                 @id @default(autoincrement())
   athleteName    String              @db.VarChar(10)
   speed          Int
@@ -34,7 +37,10 @@ model Athlete {
   athleteType    Athlete_athleteType
   spawnRate      Int
   UsersAthlete   UsersAthlete[]
+<<<<<<< HEAD
 >>>>>>> origin/feature/seungmin
+=======
+>>>>>>> origin/feature/cash_purchase
 }
 
 model MMR {
@@ -46,6 +52,7 @@ model MMR {
 }
 
 model MyTeam {
+<<<<<<< HEAD
 <<<<<<< HEAD
   id                               Int      @id @default(autoincrement())
   userId                           Int      @unique
@@ -77,7 +84,23 @@ model MyTeam {
   @@index([defender], map: "MyTeam_defender_fkey_idx")
   @@index([middle], map: "MyTeam_middle_fkey_idx")
 >>>>>>> origin/feature/seungmin
+=======
+  id                               Int          @id @default(autoincrement())
+  userId                           Int          @unique
+  attacker                         Int          @unique
+  defender                         Int          @unique
+  middle                           Int          @unique
+  createdAt                        DateTime     @default(now())
+  Athlete_MyTeam_attackerToAthlete UsersAthlete @relation("MyTeam_attackerToAthlete", fields: [attacker], references: [id])
+  Athlete_MyTeam_defenderToAthlete UsersAthlete @relation("MyTeam_defenderToAthlete", fields: [defender], references: [id])
+  Athlete_MyTeam_middleToAthlete   UsersAthlete @relation("MyTeam_middleToAthlete", fields: [middle], references: [id])
+  Users                            Users        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+>>>>>>> origin/feature/cash_purchase
   @@index([userId])
+  @@index([attacker], map: "MyTeam_attacker_fkey_idx")
+  @@index([defender], map: "MyTeam_defender_fkey_idx")
+  @@index([middle], map: "MyTeam_middle_fkey_idx")
 }
 
 model Users {
@@ -93,6 +116,7 @@ model Users {
 }
 
 model UsersAthlete {
+<<<<<<< HEAD
 <<<<<<< HEAD
   id        Int      @id @default(autoincrement())
   userId    Int
@@ -113,6 +137,18 @@ model UsersAthlete {
   Athlete                              Athlete  @relation(fields: [athleteId], references: [id])
   Users                                Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 >>>>>>> origin/feature/seungmin
+=======
+  id                              Int      @id @default(autoincrement())
+  userId                          Int
+  athleteId                       Int
+  enhance                         Int
+  createdAt                       DateTime @default(now())
+  MyTeam_MyTeam_attackerToAthlete MyTeam?  @relation("MyTeam_attackerToAthlete")
+  MyTeam_MyTeam_defenderToAthlete MyTeam?  @relation("MyTeam_defenderToAthlete")
+  MyTeam_MyTeam_middleToAthlete   MyTeam?  @relation("MyTeam_middleToAthlete")
+  Athlete                         Athlete  @relation(fields: [athleteId], references: [id])
+  Users                           Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+>>>>>>> origin/feature/cash_purchase
 
   @@index([athleteId], map: "UsersAthlete_athleteId_fkey")
   @@index([userId], map: "UsersAthlete_userId_fkey")
