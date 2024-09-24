@@ -41,51 +41,75 @@ const calculateMatchResult = async (userId, opponentId) => {
   let userScore = 0;
   let opponentScore = 0;
 
-  ['ATTACKER', 'DEFENDER', 'MIDDLE'].forEach((position) => {
-    const userAthlete = userAthletes.find((a) => a.Athlete.athleteType === position);
-    const opponentAthlete = opponentAthletes.find((a) => a.Athlete.athleteType === position);
+  for (let i = 0; i < 11; i++) {
+    const userMidfielder = userAthletes.find((a) => a.Athlete.athleteType === 'MIDDLE');
+    const opponentMidfielder = opponentAthletes.find((a) => a.Athlete.athleteType === 'MIDDLE');
 
-    if (!userAthlete || !opponentAthlete) {
-      if (!userAthlete && opponentAthlete) opponentScore++;
-      if (!opponentAthlete && userAthlete) userScore++;
-      return;
-    }
+    const userMidfieldControl =
+      (userMidfielder.Athlete.scoringAbility + userMidfielder.Athlete.power) *
+        positionWeights.MIDDLE.scoringAbility +
+      userMidfielder.enhance;
+    const opponentMidfieldControl =
+      (opponentMidfielder.Athlete.scoringAbility + opponentMidfielder.Athlete.power) *
+        positionWeights.MIDDLE.scoringAbility +
+      opponentMidfielder.enhance;
 
-    const userStats = userAthlete.Athlete;
-    const opponentStats = opponentAthlete.Athlete;
+    const midfieldResult =
+      Math.random() * userMidfieldControl - Math.random() * opponentMidfieldControl;
 
-    const userPower =
-      userStats.scoringAbility * positionWeights[position].scoringAbility +
-      userStats.power * positionWeights[position].power +
-      userStats.defence * positionWeights[position].defence +
-      userAthlete.enhance;
+    let isUserAttacking = midfieldResult > 0;
 
-    const opponentPower =
-      opponentStats.scoringAbility * positionWeights[position].scoringAbility +
-      opponentStats.power * positionWeights[position].power +
-      opponentStats.defence * positionWeights[position].defence +
-      opponentAthlete.enhance;
+    if (isUserAttacking) {
+      const userAttacker = userAthletes.find((a) => a.Athlete.athleteType === 'ATTACKER');
+      const opponentDefender = opponentAthletes.find((a) => a.Athlete.athleteType === 'DEFENDER');
 
-    if (userPower * Math.random() > opponentPower * Math.random()) {
-      userScore++;
+      const userAttackPower =
+        userAttacker.Athlete.scoringAbility * positionWeights.ATTACKER.scoringAbility +
+        userAttacker.enhance;
+      const opponentDefencePower =
+        opponentDefender.Athlete.defence * positionWeights.DEFENDER.defence +
+        opponentDefender.enhance;
+
+      const attackResult = Math.random() * (userAttackPower - opponentDefencePower);
+      if (attackResult > 0) {
+        userScore++;
+      }
     } else {
-      opponentScore++;
-    }
-  });
+      const opponentAttacker = opponentAthletes.find((a) => a.Athlete.athleteType === 'ATTACKER');
+      const userDefender = userAthletes.find((a) => a.Athlete.athleteType === 'DEFENDER');
 
-  const userMMRChange = userScore > opponentScore ? 20 : -10;
+      const opponentAttackPower =
+        opponentAttacker.Athlete.scoringAbility * positionWeights.ATTACKER.scoringAbility +
+        opponentAttacker.enhance;
+      const userDefencePower =
+        userDefender.Athlete.defence * positionWeights.DEFENDER.defence + userDefender.enhance;
+
+      const attackResult = Math.random() * (opponentAttackPower - userDefencePower);
+      if (attackResult > 0) {
+        opponentScore++;
+      }
+    }
+  }
+
+  let userMMRChange = 20;
+
+  if (userScore === opponentScore) {
+    userMMRChange = 0;
+  } else if (userScore < opponentScore) {
+    userMMRChange = -10;
+  }
 
   await updateMMR(userId, userMMRChange);
 
   const updatedUserMMR = userMMR.score + userMMRChange;
 
   return {
+    opponent: opponentId,
     winner: userScore > opponentScore ? userId : opponentId,
     userScore,
     opponentScore,
     userMMRChange,
     userMMR: updatedUserMMR,
     opponentMMR: opponentMMR.score,
-    matchDetails: { userScore, opponentScore },
   };
 };

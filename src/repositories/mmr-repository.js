@@ -1,6 +1,5 @@
 import { prisma } from '../lib/prisma.js';
 import ApiError from '../errors/api-error.js';
-import Utils from '../lib/utils.js';
 import logger from '../lib/logger.js';
 
 export const findOpponentByMMR = async (userId) => {
@@ -21,13 +20,18 @@ export const findOpponentByMMR = async (userId) => {
       return null;
     }
 
-    const closestOpponent = opponents.reduce((closest, opponent) => {
-      const currentDiff = Math.abs(opponent.score - userScore);
-      const closestDiff = Math.abs(closest.score - userScore);
-      return currentDiff < closestDiff ? opponent : closest;
-    }, opponents[0]);
+    const closestOpponents = opponents
+      .map((opponent) => ({
+        opponent,
+        scoreDiff: Math.abs(opponent.score - userScore),
+      }))
+      .sort((a, b) => a.scoreDiff - b.scoreDiff)
+      .slice(0, 5)
+      .map(({ opponent }) => opponent);
 
-    return closestOpponent;
+    const randomOpponent = closestOpponents[Math.floor(Math.random() * closestOpponents.length)];
+
+    return randomOpponent;
   } catch (error) {
     logger.error(`Failed to find opponent. ${error}`);
     throw new ApiError('Failed to find opponent', 500);
