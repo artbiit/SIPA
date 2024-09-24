@@ -4,13 +4,13 @@ const routes = [
     method: 'post',
     url: '/shop/purchase',
     action: purchaseCash,
-    // authRequired: true,
+    authRequired: true,
   },
   {
     method: 'post',
     url: '/shop/gacha',
     action: gacha,
-    // authRequired: true,
+    authRequired: true,
   },
 ];
 
