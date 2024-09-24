@@ -2,17 +2,8 @@ import jwt from 'jsonwebtoken';
 import env from '../lib/env.js';
 import logger from '../lib/logger.js'; // 로깅 시스템 추가
 const { JWT_SECRET } = env;
-//import { findUserById } from '../repositories/user-repository.js'; // 유저 정보를 DB에서 가져오는 함수
 import ApiError from '../errors/api-error.js';
 
-/**
- * 요청 헤더에 포함된 토큰을 검증하고 유저 정보를 가져오는 미들웨어
- * 모든 요청에서 항상 첫 번째로 실행됩니다.
- * @param {Object} req - Express 요청 객체
- * @param {Object} res - Express 응답 객체
- * @param {Function} next - 다음 미들웨어로 제어를 전달하는 함수
- * @returns {void}
- */
 export const tokenVerify = async (req, res, next) => {
   let token = req.headers['authorization'];
   token = token && token.split(' ')[1];

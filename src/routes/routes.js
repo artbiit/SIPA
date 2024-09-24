@@ -1,6 +1,4 @@
 import Utils from '../lib/utils.js';
-import { authenticateToken } from '../middleware/auth-middleware.js';
-import { tokenVerify } from '../middleware/token-middleware.js';
 import teamRoute from './team-organize-routes.js';
 import gameRoutes from './game-route.js';
 import playRoutes from './play-route.js';
@@ -19,12 +17,11 @@ const allRoutes = [
 // 파라미터 및 미들웨어 자동 설정
 allRoutes.forEach((route) => {
   route.requiredParams = Utils.getFunctionParams(route.action);
-  route.middleware = [];
-  // route.middleware = [tokenVerify];
+  route.middleware = [verifyToken];
 
-  // if (route.authRequired) {
-  //   route.middleware.push(authenticateToken);
-  // }
+  if (route.authRequired) {
+    route.middleware.push(authenticateToken);
+  }
 });
 
 export default allRoutes;
