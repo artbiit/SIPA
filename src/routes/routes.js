@@ -3,7 +3,7 @@ import { authenticateToken } from '../middleware/auth-middleware.js';
 import { tokenVerify } from '../middleware/token-middleware.js';
 import teamRoute from './team-organize-routes.js';
 import gameRoutes from './game-route.js';
-<<<<<<< HEAD
+import playRoutes from './play-route.js';
 import userRoutes from './users-route.js';
 import purchaseRoute from './purchase-route.js';
 
@@ -11,15 +11,9 @@ const allRoutes = [
   ...gameRoutes,
   ...userRoutes,
   ...purchaseRoute,
-=======
-import playRoutes from './play-route.js'
-
-const allRoutes = [
-  ...gameRoutes,
-  ...playRoutes,
->>>>>>> origin/feature/play
-  // 다른 라우트 추가 가능
   ...teamRoute,
+  ...playRoutes,
+  // 다른 라우트 추가 가능
 ];
 
 // 파라미터 및 미들웨어 자동 설정
