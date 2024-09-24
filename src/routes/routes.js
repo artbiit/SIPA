@@ -1,15 +1,13 @@
 import Utils from '../lib/utils.js';
 import { authenticateToken } from '../middleware/auth-middleware.js';
 import { tokenVerify } from '../middleware/token-middleware.js';
-import gameRoutes from './game-route.js';
-import userRoutes from './users-route.js';
-import purchaseRoute from '../routes/purchase-route.js';
-
+import teamRoute from './team-organize-routes.js';
 const allRoutes = [
   ...gameRoutes,
   ...userRoutes,
   ...purchaseRoute,
   // 다른 라우트 추가 가능
+  ...teamRoute,
 ];
 
 // 파라미터 및 미들웨어 자동 설정
