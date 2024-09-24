@@ -6,11 +6,11 @@ import {
   addUsersAthlete,
 } from '../repositories/purchase-repository.js';
 
-export const purchaseCash = async ({ userId, cash }) => {
+export const purchaseCash = async ({ Id = null, cash }) => {
   const result = {};
 
-  const userCash = await getUserCash(userId);
-  await setUserCash(userId, userCash.cash + cash);
+  const userCash = await getUserCash(Id);
+  await setUserCash(Id, userCash.cash + cash);
 
   result.totalCash = userCash.cash + cash;
 
@@ -18,20 +18,20 @@ export const purchaseCash = async ({ userId, cash }) => {
 };
 
 // amount는 정수임
-export const gacha = async ({ userId, amount }) => {
+export const gacha = async ({ Id = null, amount }) => {
   const result = {};
 
   // WARN: 임시로 정해둔 상수
   const GACHA_PRICE = 1000;
 
-  const userCash = await getUserCash(userId);
+  const userCash = await getUserCash((Id = null));
   if (userCash.cash - GACHA_PRICE < 0) {
     throw new ApiError('Not enough cash', 403);
   }
 
   const FINAL_PRICE = GACHA_PRICE * amount;
 
-  await setUserCash(userId, userCash.cash - FINAL_PRICE);
+  await setUserCash((Id = null), userCash.cash - FINAL_PRICE);
 
   const athletes = await getAthletes();
   const totalWeight = athletes.reduce((total, athlete) => total + athlete.spawnRate, 0);
@@ -49,7 +49,7 @@ export const gacha = async ({ userId, amount }) => {
     const rand = Math.random() * totalWeight + 1;
     // UsersAthlete: id, userId, athleteId, enhance, createdAt
     randomGeneratedAthletes.push({
-      userId: userId,
+      userId: (Id = null),
       athleteId: weightRandomId(rand),
       enhance: 0,
     });
