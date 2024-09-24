@@ -1,4 +1,4 @@
-import { prisma } from '../lib/prisma.js';
+import prisma from '../lib/prisma.js';
 
 export const getMyTeam = async (userId) => {
   try {
@@ -19,8 +19,12 @@ export const getMyTeam = async (userId) => {
     }
 
     const team = {
-      attacker: await getAthleteById(myTeam[0].UsersAthlete_MyTeam_attackerToUsersAthlete.athleteId),
-      defender: await getAthleteById(myTeam[0].UsersAthlete_MyTeam_defenderToUsersAthlete.athleteId),
+      attacker: await getAthleteById(
+        myTeam[0].UsersAthlete_MyTeam_attackerToUsersAthlete.athleteId,
+      ),
+      defender: await getAthleteById(
+        myTeam[0].UsersAthlete_MyTeam_defenderToUsersAthlete.athleteId,
+      ),
       middle: await getAthleteById(myTeam[0].UsersAthlete_MyTeam_middleToUsersAthlete.athleteId),
     };
     console.log(team);
@@ -59,7 +63,6 @@ export const getEnemyTeam = async (userName) => {
     throw new Error('적팀 조회 실패');
   }
 };
-
 
 const getAthleteById = async (athleteId) => {
   try {
