@@ -7,7 +7,6 @@ const routes=[
         action:teamOrganize,
         autoRequired:true,
     },
-    
 ]
 
 export default routes;
