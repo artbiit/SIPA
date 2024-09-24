@@ -6,6 +6,7 @@ import bodyParser from 'body-parser';
 import logger from './lib/logger.js';
 import allRoutes from './routes/routes.js';
 import ApiError from './errors/api-error.js';
+import UsersRouter from './routes/users-route.js';
 const { SERVER_PORT } = env;
 const app = express();
 app.use(helmet());
