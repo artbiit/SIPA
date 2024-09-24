@@ -2,7 +2,7 @@ import ApiError from "../errors/api-error.js";
 import prisma from "../lib/prisma.js";
 import Utils from "../lib/utils.js";
 import { createUser } from "../repositories/users-repository.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken';
 
 
@@ -15,6 +15,7 @@ export const signup = async ({ userId, password, userName }) => {
         throw new ApiError("아이디는 5글자 이상이어야 합니다.", 400);
     }
     
+    const hashedPassword = await bcrypt.hash(password, 10);
     // 성공적으로 통과할 경우
     return {
         message: "회원가입 성공",
@@ -26,7 +27,6 @@ export const signup = async ({ userId, password, userName }) => {
 
 
 export const login = async ({ userId, password }) => {
-    const hashedPassword = await bcrypt.hash(password, 10);
     const user = await createUser(userId);
 if(!user){
     throw new ApiError("요청하신 정보가 없습니다", 400);
