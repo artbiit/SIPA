@@ -2,6 +2,10 @@ import Utils from '../lib/utils.js';
 import { authenticateToken } from '../middleware/auth-middleware.js';
 import { tokenVerify } from '../middleware/token-middleware.js';
 import teamRoute from './team-organize-routes.js';
+import gameRoutes from './game-route.js';
+import userRoutes from './users-route.js';
+import purchaseRoute from './purchase-route.js';
+
 const allRoutes = [
   ...gameRoutes,
   ...userRoutes,
