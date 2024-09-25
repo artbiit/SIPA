@@ -1,7 +1,9 @@
 import fs from 'fs';
 import YAML from 'yaml';
+import path from 'path';
 
-const yamlFilePath = './swagger.yaml';
+// Absolute path to the YAML file inside the container
+const yamlFilePath = path.join(process.cwd(), 'swagger.yaml');
 
 const fileContents = fs.readFileSync(yamlFilePath, 'utf8');
 

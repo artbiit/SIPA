@@ -1,0 +1,26 @@
+# Ignore node_modules
+node_modules
+logs
+
+# Ignore npm and yarn logs
+npm-debug.log
+yarn-error.log
+
+# Ignore local development files
+*.local
+
+# Ignore test and coverage files
+coverage
+test
+jest.config.js
+
+# Ignore Docker-related files
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Ignore miscellaneous files
+.vscode
+.idea
+.DS_Store
+*.log
